@@ -9,7 +9,10 @@ def project_name():
 #parse file into a list of tuples
 def read_file_lines(path_to_file):
     with open(path_to_file, "r") as f:
+        # line[:-1] used here to stop before newline while reading
         list_of_entries = [line[:-1] for line in f]
+
+    
     values = [line.split(",") for line in list_of_entries]
     tuples_list = []
     for line in values:
@@ -21,32 +24,69 @@ def read_file_lines(path_to_file):
 def find_bpm(data, bpm_val):
     query = []
     for row in data:
+        # row[2] is bpm string, remove its double quote formatting
+        # save as val_string
         val_string = row[2].strip('"')
         if val_string == str(bpm_val):
             query += [row]
 
     return query
 
+def remove_title_row(table):
+    data_rows = table[1:]
+
+    return data_rows
+
+def title_row(table):
+    return table[0]
+
+def printquery(table):
+    # save table title row and data_rows separately
+    
+    col_name = title_row(table)
+    data_rows = remove_title_row(table)
+    print(col_name[0], col_name[1], col_name[2])
+    for item in data_rows:
+        # put elements of item into a string and print
+
+        formatrow = ""
+        for row_element in item:
+            formatrow += row_element
+            formatrow+=","
+
+        print(formatrow)
+
+    return
+
+def create_indexkeys(table):
+    indexed_rows = {}
+    for i in range(len(table)):
+        indexed_rows[i] = table[i]
+
+    return indexed_rows
+
+def create_new_indexed_table(keys_dict):
+    data_rows = [[str(idx)] + list(keys_dict[idx]) for idx in keys_dict.keys()]
+    
+    return data_rows
+    
 def main():
     filename = project_name()
+    
     full_list = read_file_lines(filename)
+
+    data_table = remove_title_row(full_list)
+
+    index_keys_dicts = create_indexkeys(data_table)
+
+    indexed_table = create_new_indexed_table(index_keys_dicts)
+
     
-    # print as table
-
-    col_name = full_list[0]
-    print(col_name[0], col_name[1], col_name[2])
-    data_rows = full_list[1:]
-    for item in data_rows:
-        print(item[0], item[1], item[2])
-
+    printquery(indexed_table)
+    
         
-    print("all 130 songs:")
-    oneTHIRTYquery = find_bpm(data_rows, 130)
-
-    for row in oneTHIRTYquery:
-        print(row)
-
     
+        
     return
 
 if __name__ == "__main__":
