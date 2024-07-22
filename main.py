@@ -40,23 +40,31 @@ def remove_title_row(table):
 def title_row(table):
     return table[0]
 
-def printquery(table):
-    # save table title row and data_rows separately
+def print_row_format(data_row):
+    # put elements of data_row (which is a list) into a string and print
+    formatrow = ""
+    for row_element in data_row:
+        formatrow += row_element
+        formatrow+=","
+
+    print(formatrow)
     
-    col_name = title_row(table)
+
+def print_data_rows(table):
+
     data_rows = remove_title_row(table)
-    print(col_name[0], col_name[1], col_name[2])
-    for item in data_rows:
-        # put elements of item into a string and print
+    
+    for row in data_rows:
+        print_row_format(row)
+    
+    
 
-        formatrow = ""
-        for row_element in item:
-            formatrow += row_element
-            formatrow+=","
-
-        print(formatrow)
+def print_with_titles(table):
+    print_row_format(title_row(table))
+    print_data_rows(table)
 
     return
+    
 
 def create_indexkeys(table):
     indexed_rows = {}
@@ -75,13 +83,11 @@ def main():
     
     full_list = read_file_lines(filename)
 
-    data_table = remove_title_row(full_list)
-
-    index_keys_dicts = create_indexkeys(data_table)
+    index_keys_dicts = create_indexkeys(full_list)
 
     indexed_table = create_new_indexed_table(index_keys_dicts)
 
-    printquery(indexed_table)
+    print_with_titles(indexed_table)
     
     return
 
