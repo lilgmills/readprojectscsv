@@ -81,12 +81,8 @@ def main():
 
     indexed_table = create_new_indexed_table(index_keys_dicts)
 
-    
     printquery(indexed_table)
     
-        
-    
-        
     return
 
 if __name__ == "__main__":
