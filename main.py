@@ -73,10 +73,30 @@ def create_indexkeys(table):
 
     return indexed_rows
 
-def create_new_indexed_table(keys_dict):
-    data_rows = [[str(idx)] + list(keys_dict[idx]) for idx in keys_dict.keys()]
-    
+def create_new_indexed_table(keys_dict):    
+    data_rows = []
+    for idx in keys_dict.keys():
+        if idx != 0:
+            data_rows += [[str(idx)] + list(keys_dict[idx]) ]
+        else:
+            data_rows += [["index"] + list(keys_dict[idx]) ]
     return data_rows
+
+def create_comparison_pairs(table):
+    titles = title_row(table)
+    for col_num,col in enumerate(titles):
+        if col == "index":
+            idx_col = col_num
+
+    data_table = remove_title_row(table)
+    index_pairs = []
+    for i, row in enumerate(data_table):
+        for j, row in enumerate(data_table[i:]):
+            index_pairs += [(i, j)]
+    print(index_pairs)
+                
+                
+            
     
 def main():
     filename = project_name()
@@ -88,6 +108,11 @@ def main():
     indexed_table = create_new_indexed_table(index_keys_dicts)
 
     print_with_titles(indexed_table)
+
+    create_comparison_pairs(indexed_table)
+    
+    
+        
     
     return
 
