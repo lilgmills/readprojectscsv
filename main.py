@@ -6,23 +6,43 @@ def project_name():
     filepath = file_location + "\\" + txttitle
     return filepath
 
+
+
+def ignore_newlines_and_commas(list_of_textlines):
+    formattedlist = []
+    for row in list_of_textlines:
+        if row != "" and row != "\n":
+            #ignore newline
+            row = row.strip("\n")
+            #ignore terminal comma, if it exists
+            if row[-1] == ",":
+                row = row[:-1]
+
+            formattedlist += [row]
+        
+    return formattedlist
+
+def strip_quotes(text_entry):
+    if text_entry[0] == '\"' and text_entry[-1] == '\"':
+        text_entry_stripped = text_entry[1:-1]
+    else:
+        return text_entry
+    return text_entry_stripped
+
 #parse file into a list of tuples
 def read_file_lines(path_to_file):
-
+    
     with open(path_to_file, "r") as f:
-        # line[:-1] used here to stop before newline while reading
-        list_of_entries = [line[:-1] for line in f]
+        list_of_rows = f.readlines()
+        format_rowlist = ignore_newlines_and_commas(list_of_rows)
+        
+    listed_row_values = [line.split(",") for line in format_rowlist]
+    table_rows = []
+    for value in listed_row_values:
+        new_row = [strip_quotes(entry) for entry in value]        
+        table_rows += [new_row]
 
-    values = [line.split(",") for line in list_of_entries]
-    tuples_list = []
-    for line in values:
-        if line == [""]:
-            pass
-        else:
-            new_tuple = (line[0], line[1], line[2])        
-            tuples_list += [new_tuple]
-
-    return tuples_list
+    return table_rows
     
 def find_bpm(data, bpm_val):
     query = []
@@ -71,22 +91,20 @@ def print_with_titles(table):
 
 def create_new_indexed_table(table):
 
-    keys_dict = {}
-    for i in range(len(table)):
-        keys_dict[i] = table[i]
+    
 
     data_rows = []
-    for idx in keys_dict.keys():
+    for idx in range(len(table)):
         if idx != 0:
-            data_rows += [[idx] + list(keys_dict[idx]) ]
+            data_rows += [[idx] + table[idx] ]
         else:
-            data_rows += [['\"index\"'] + list(keys_dict[idx]) ]
+            data_rows += [["index"] + table[idx] ]
     return data_rows
 
 def create_comparison_pairs(table):
     titles = title_row(table)
     for col_num,col in enumerate(titles):
-        if col == '\"index\"':
+        if col == "index":
             idx_col = col_num
 
     data_table = remove_title_row(table)
