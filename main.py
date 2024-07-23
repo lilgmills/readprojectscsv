@@ -8,16 +8,19 @@ def project_name():
 
 #parse file into a list of tuples
 def read_file_lines(path_to_file):
+
     with open(path_to_file, "r") as f:
         # line[:-1] used here to stop before newline while reading
         list_of_entries = [line[:-1] for line in f]
 
-    
     values = [line.split(",") for line in list_of_entries]
     tuples_list = []
     for line in values:
-        new_tuple = (line[0], line[1], line[2])        
-        tuples_list += [new_tuple]
+        if line == [""]:
+            pass
+        else:
+            new_tuple = (line[0], line[1], line[2])        
+            tuples_list += [new_tuple]
 
     return tuples_list
     
@@ -66,26 +69,24 @@ def print_with_titles(table):
     return
     
 
-def create_indexkeys(table):
-    indexed_rows = {}
+def create_new_indexed_table(table):
+
+    keys_dict = {}
     for i in range(len(table)):
-        indexed_rows[i] = table[i]
+        keys_dict[i] = table[i]
 
-    return indexed_rows
-
-def create_new_indexed_table(keys_dict):    
     data_rows = []
     for idx in keys_dict.keys():
         if idx != 0:
             data_rows += [[idx] + list(keys_dict[idx]) ]
         else:
-            data_rows += [["index"] + list(keys_dict[idx]) ]
+            data_rows += [['\"index\"'] + list(keys_dict[idx]) ]
     return data_rows
 
 def create_comparison_pairs(table):
     titles = title_row(table)
     for col_num,col in enumerate(titles):
-        if col == "index":
+        if col == '\"index\"':
             idx_col = col_num
 
     data_table = remove_title_row(table)
@@ -105,9 +106,7 @@ def main():
     
     full_list = read_file_lines(filename)
 
-    index_keys_dicts = create_indexkeys(full_list)
-
-    indexed_table = create_new_indexed_table(index_keys_dicts)
+    indexed_table = create_new_indexed_table(full_list)
 
     print_with_titles(indexed_table)
 
