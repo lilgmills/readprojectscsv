@@ -2,9 +2,8 @@ from random import choice
 import json
 
 #store and return project list location
-def project_name():
+def project_name(txttitle):
     file_location = "C:\\Users\\Tyler\\Documents\\Audio exports\\Zig Zag"
-    txttitle = "Project List.txt"
     filepath = file_location + "\\" + txttitle
     return filepath
 
@@ -45,7 +44,7 @@ def strip_quotes(text_entry):
         return text_entry
     return text_entry_stripped
 
-#parse file into a list of tuples
+#parse file into a list of lists for csv row entries
 def read_file_lines(path_to_file):
     
     with open(path_to_file, "r") as f:
@@ -149,16 +148,13 @@ def interactive_comparison(serialized_file):
             
     
 def main():
-    filename = project_name()
+    filename = project_name("Indexed Project List.txt")
     
-    full_list = read_file_lines(filename)
+    indexed_table = read_file_lines(filename)
 
-    indexed_table = create_new_indexed_table(full_list)
-
-    # print_with_titles(indexed_table)
-    write_to_txt_file(indexed_table)
-
-    comparison_idxs = create_comparison_pairs(indexed_table)
+    print_with_titles(indexed_table)
+    
+    # comparison_idxs = create_comparison_pairs(indexed_table)
 
 ##    interactive_comparison('index_comparisons.json')
 ##    
