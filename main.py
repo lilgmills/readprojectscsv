@@ -1,3 +1,5 @@
+from random import choice
+import json
 
 #store and return project list location
 def project_name():
@@ -6,7 +8,21 @@ def project_name():
     filepath = file_location + "\\" + txttitle
     return filepath
 
+def write_to_txt_file(mem_table):
+    file_location = "C:\\Users\\Tyler\\Documents\\Audio exports\\Zig Zag"
+    txttitle = "Indexed Project List.txt"
+    filepath = file_location + "\\" + txttitle
+    
+    with open(filepath, "w+") as f:
+        for row in mem_table:
+            formatrow = ""
+            for row_element in row:
+                formatrow += str(row_element)
+                formatrow+=","
+            f.write(formatrow + '\n')
 
+        print(f.read())
+    return
 
 def ignore_newlines_and_commas(list_of_textlines):
     formattedlist = []
@@ -101,7 +117,9 @@ def create_new_indexed_table(table):
             data_rows += [["index"] + table[idx] ]
     return data_rows
 
-def create_comparison_pairs(table):
+def create_comparison_pairs(table):    
+
+    # find which column is the index column (named "index" in the title row)
     titles = title_row(table)
     for col_num,col in enumerate(titles):
         if col == "index":
@@ -110,12 +128,23 @@ def create_comparison_pairs(table):
     data_table = remove_title_row(table)
     index_pairs = []
     for i, row1 in enumerate(data_table):
-        for j, row2 in enumerate(data_table[i:]):
+        # start enumerating from i + 1 so we do not get 
+        #     duplicates (self-comparison) inside the pair
+        for j, row2 in enumerate(data_table[i+1:]):
             index_pairs += [(row1[idx_col], row2[idx_col])]
 
 
     return index_pairs
-                
+
+def interactive_comparison(serialized_file):
+    better_than_partition = json.load(serialized_file)
+    # if project list has more indices than the json file, we need to add them
+    # if comparisons.json has indices that have been removed from the project list,
+    #     we need to discard them
+    # I don't know how to do all that yet
+    # Problem: If list changes, the indices change. Should have an option to reset manually?
+    
+    
                 
             
     
@@ -126,40 +155,38 @@ def main():
 
     indexed_table = create_new_indexed_table(full_list)
 
-    print_with_titles(indexed_table)
+    # print_with_titles(indexed_table)
+    write_to_txt_file(indexed_table)
 
     comparison_idxs = create_comparison_pairs(indexed_table)
 
-    from random import shuffle, choice
-
-    shuffle(comparison_idxs)
-
-    better_than_partition = {}
-
-    for i in range(3):
-        random_index_pair = choice(comparison_idxs)
-        pair_first = random_index_pair[0]
-        pair_second = random_index_pair[1]
-        title_col = 2
-        print(indexed_table[pair_first][title_col])
-        print(indexed_table[pair_second][title_col])
-
-        get_input = None
-        while (get_input != "1" and get_input != "2"):
-            get_input = input("Which song is better? Type a 1 or a 2\n")
-        
-        if get_input == "1":
-            if pair_first not in better_than_partition.keys():
-                better_than_partition[pair_first] = set()       
-            better_than_partition[pair_first].add(pair_second)
-        else:
-            if pair_second not in better_than_partition.keys():
-                better_than_partition[pair_second] = set()       
-            better_than_partition[pair_second].add(pair_first)
-
-    for k in better_than_partition.keys():
-        print(indexed_table[k][title_col], "is better than:")
-        print([indexed_table[x][title_col] for x in better_than_partition[k]])
+##    interactive_comparison('index_comparisons.json')
+##    
+##
+##    for i in range(3):
+##        random_index_pair = choice(comparison_idxs)
+##        pair_first = random_index_pair[0]
+##        pair_second = random_index_pair[1]
+##        title_col = 2
+##        print(indexed_table[pair_first][title_col])
+##        print(indexed_table[pair_second][title_col])
+##
+##        get_input = None
+##        while (get_input != "1" and get_input != "2"):
+##            get_input = input("Which song is better? Type a 1 or a 2\n")
+##        
+##        if get_input == "1":
+##            if pair_first not in better_than_partition.keys():
+##                better_than_partition[pair_first] = set()       
+##            better_than_partition[pair_first].add(pair_second)
+##        else:
+##            if pair_second not in better_than_partition.keys():
+##                better_than_partition[pair_second] = set()       
+##            better_than_partition[pair_second].add(pair_first)
+##
+##    for k in better_than_partition.keys():
+##        print(indexed_table[k][title_col], "is better than:")
+##        print([indexed_table[x][title_col] for x in better_than_partition[k]])
     
         
     
