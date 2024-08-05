@@ -39,7 +39,7 @@ def ignore_newlines_and_commas(list_of_textlines):
 
 def strip_quotes(text_entry):
     if not text_entry:
-        
+        # empty string
         return text_entry
 
     elif text_entry[0] == '\"' and text_entry[-1] == '\"':
@@ -120,6 +120,18 @@ def create_new_indexed_table(table):
             data_rows += [["index"] + table[idx] ]
     return data_rows
 
+def index_column_index(table):
+    titles = title_row(table)
+    idx_col = None
+    for col_num,col in enumerate(titles):
+        if col == "index":
+            if not idx_col:
+                idx_col = col_num
+            else:
+                print("Error: there is more than one \"index\" column")
+    
+    return idx_col
+
 def create_comparison_pairs(table):    
 
     # find which column is the index column (named "index" in the title row)
@@ -148,8 +160,30 @@ def interactive_comparison(serialized_file):
     # Problem: If list changes, the indices change. Should have an option to reset manually?
     
     
-                
-            
+
+class ComparisonTable():
+    def __init__(self, indexed_table):
+        self.title_row = "\"index\",\"comparisons\","
+        self.data_rows = self.initialize_comparison(indexed_table)
+                        
+    def initialize_comparison(self, table):
+        # take the column that has all the indicies from indexed table, and initialize new comparisons
+        index_column = []
+        idx_col = index_column_index(table)
+        data_rows = remove_title_row(table)
+        for row in data_rows:
+            index_column.append(row[idx_col])
+
+        comparison_data = ["\"{}\",,".format(str(index_column[i])) for i in range(len(data_rows))]
+        return comparison_data
+    
+    def __str__(self):
+        string_self = self.title_row + "\n"
+        for row in self.data_rows:
+            row = row + "\n"
+            string_self += row
+        return string_self
+
     
 def main():
     filename = project_name("Indexed Project List.txt")
@@ -157,6 +191,12 @@ def main():
     indexed_table = read_file_lines(filename)
 
     print_with_titles(indexed_table)
+
+    print(indexed_table)
+
+    comparison_object = ComparisonTable(indexed_table)
+
+    print(comparison_object)
     
     # comparison_idxs = create_comparison_pairs(indexed_table)
 
