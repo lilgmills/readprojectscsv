@@ -163,7 +163,7 @@ def interactive_comparison(serialized_file):
 
 class ComparisonTable():
     def __init__(self, indexed_table):
-        self.title_row = "\"index\",\"comparisons\","
+        self.title_row = ["index","comparisons"]
         self.data_rows = self.initialize_comparison(indexed_table)
                         
     def initialize_comparison(self, table):
@@ -174,14 +174,32 @@ class ComparisonTable():
         for row in data_rows:
             index_column.append(row[idx_col])
 
-        comparison_data = ["\"{}\",,".format(str(index_column[i])) for i in range(len(data_rows))]
+        comparison_data = [[str(index_column[i]),[]] for i in range(len(data_rows))]
         return comparison_data
     
+    def insert_comparison(self, index1, index2):
+        # go to table row for index1
+        record_row = None
+        for row_num,row in enumerate(self.data_rows):
+            # read index in index column
+            pass
+
+    def wrap_quotes(self, entry):
+        if entry == []:
+            return "\"\""
+        else: return "\"{}\"".format(entry)
+    
+    def wrap_row_entries(self, row):
+        return [self.wrap_quotes(entry) for entry in row]
+
     def __str__(self):
-        string_self = self.title_row + "\n"
+        titles_wrapped = self.wrap_row_entries(self.title_row)
+        title_string = ",".join(titles_wrapped)
+        string_self = title_string + ",\n"
         for row in self.data_rows:
-            row = row + "\n"
-            string_self += row
+            row_entries_wrapped = self.wrap_row_entries(row)
+            string_self += ",".join(row_entries_wrapped)
+            string_self += ",\n"
         return string_self
 
     
