@@ -38,7 +38,11 @@ def ignore_newlines_and_commas(list_of_textlines):
     return formattedlist
 
 def strip_quotes(text_entry):
-    if text_entry[0] == '\"' and text_entry[-1] == '\"':
+    if not text_entry:
+        
+        return text_entry
+
+    elif text_entry[0] == '\"' and text_entry[-1] == '\"':
         text_entry_stripped = text_entry[1:-1]
     else:
         return text_entry
