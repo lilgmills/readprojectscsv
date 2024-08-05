@@ -174,20 +174,64 @@ class ComparisonTable():
         for row in data_rows:
             index_column.append(row[idx_col])
 
-        comparison_data = [[str(index_column[i]),[]] for i in range(len(data_rows))]
+        comparison_data = [[int(index_column[i]),[]] for i in range(len(data_rows))]
         return comparison_data
     
+    #returns the index of the given column title
+    def column_num(self, col_name):
+        col_idx = None
+        for col_num, title in enumerate(self.title_row):
+            if col_name == title:
+                if not col_idx:
+                    col_idx = col_num
+                else:
+                    print("Error: there is more than one {} column".format(col_name))
+
+        if col_idx is None:
+            print("There is no {} column".format(col_name))
+            return
+        return col_idx
+
+    # returns the data_row list index of the given record index    
+    def row_num(self, target_idx):
+        row_idx = None
+        index_col = self.column_num("index")
+        for row_num, row in enumerate(self.data_rows):
+            
+            if row[index_col] == target_idx:
+                if not row_idx:
+                    row_idx = row_num
+                else:
+                    print("Error: there is more than one {} index".format(target_idx))
+        if row_idx is None:
+            print("There is not a {} index".format(target_idx))
+            return
+        return row_idx
+    
+    def check_index_exists(self, index):
+        list_of_indices = [row[self.column_num("index")] for row in self.data_rows]
+        exists_val = index in list_of_indices
+        return exists_val
+
     def insert_comparison(self, index1, index2):
         # go to table row for index1
-        record_row = None
-        for row_num,row in enumerate(self.data_rows):
-            # read index in index column
-            pass
+        if index1 == index2:
+            print("Error: self-comparison on {}".format(index1))
+            return
+        if not self.check_index_exists(index2):
+            print("{} is not a valid index".format(index2))
+            return
+        comparison_record = self.data_rows[self.row_num(index1)]
+        comparisons_col = self.column_num("comparisons")
+        comparisons = comparison_record[comparisons_col]
+        if index2 not in comparisons:
+            comparison_record[comparisons_col].append(index2)
+        return
 
     def wrap_quotes(self, entry):
         if entry == []:
             return "\"\""
-        else: return "\"{}\"".format(entry)
+        else: return "\"{}\"".format(str(entry))
     
     def wrap_row_entries(self, row):
         return [self.wrap_quotes(entry) for entry in row]
@@ -196,10 +240,16 @@ class ComparisonTable():
         titles_wrapped = self.wrap_row_entries(self.title_row)
         title_string = ",".join(titles_wrapped)
         string_self = title_string + ",\n"
+        index_col = self.column_num("index")
+        comp_col = self.column_num("comparisons")
         for row in self.data_rows:
-            row_entries_wrapped = self.wrap_row_entries(row)
-            string_self += ",".join(row_entries_wrapped)
-            string_self += ",\n"
+            csv_comparisons = ",".join([str(entry) for entry in row[comp_col]])
+            string_self += self.wrap_quotes(row[index_col])
+            string_self +=","
+            string_self += self.wrap_quotes(csv_comparisons)
+            string_self +=",\n"
+            
+            
         return string_self
 
     
@@ -210,12 +260,14 @@ def main():
 
     print_with_titles(indexed_table)
 
-    print(indexed_table)
-
     comparison_object = ComparisonTable(indexed_table)
 
     print(comparison_object)
+
+    comparison_object.insert_comparison(5, 0)
     
+    print(comparison_object)
+
     # comparison_idxs = create_comparison_pairs(indexed_table)
 
 ##    interactive_comparison('index_comparisons.json')
