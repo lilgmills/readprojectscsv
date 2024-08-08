@@ -132,13 +132,22 @@ def index_column_index(table):
     
     return idx_col
 
-def create_comparison_pairs(table):    
-
-    # find which column is the index column (named "index" in the title row)
+def title_column_index(table):
     titles = title_row(table)
+    title_col = None
     for col_num,col in enumerate(titles):
-        if col == "index":
-            idx_col = col_num
+        if col == "title":
+            if not title_col:
+                title_col = col_num
+            else:
+                print("Error: there is more than one \"title\" column")
+    
+    return title_col
+
+def create_comparison_pairs(table):    
+    # takes an in-memory table: a list of lists of row entries, with an initial row of titles
+    # find which column is the index column (named "index" in the title row)
+    idx_col = index_column_index(table)
 
     data_table = remove_title_row(table)
     index_pairs = []
@@ -158,6 +167,21 @@ def interactive_comparison(serialized_file):
     #     we need to discard them
     # I don't know how to do all that yet
     # Problem: If list changes, the indices change. Should have an option to reset manually?
+
+def target_row(table, target_idx):
+    row_idx = None
+    index_col = index_column_index(table)
+    for row_num, row in enumerate(table):
+        
+        if row[index_col] == str(target_idx):
+            if not row_idx:
+                row_idx = row_num
+            else:
+                print("Error: there is more than one {} index".format(target_idx))
+    if row_idx is None:
+        print("There is not a {} index".format(target_idx))
+        return
+    return row_idx
     
     
 
@@ -165,10 +189,24 @@ class ComparisonTable():
     def __init__(self, indexed_table):
         self.title_row = ["index","comparisons"]
         self.data_rows = self.initialize_comparison(indexed_table)
+        self.index_list = self.get_all_indices(self.data_rows)
+        # if comparisons are already stored in a file, we want to load those as well
+        # # which could potentially be a complicated merge operation between the project list and the existing comparisons
+
+        # for every index in project list:
+        # case 1: index is also in comparisons -> case 1a. the "foreign key" index refers to the same project. no merge issue
+        # case 1: index is also in comparisons -> case 1b. the foreign key index refers to a different project. !!merge issue!! 
+        # case 2: index is not in comparisons -> !!merge issue!!
+
+        # for every index in comparisons list:
+        # case 1: index is also in project list -> case 1a. the "primary key" index refers to the same project. no merge issue
+        # case 1: index is also in project list -> case 1b. the primary key index refers to a different project. !!merge issue!! 
+        # case 2: index is not in project list -> !!merge issue!!
                         
     def initialize_comparison(self, table):
         # take the column that has all the indicies from indexed table, and initialize new comparisons
         index_column = []
+        # it's a little crazy that I'm not using a class-native method to find this index column index. Refactor please!
         idx_col = index_column_index(table)
         data_rows = remove_title_row(table)
         for row in data_rows:
@@ -176,6 +214,15 @@ class ComparisonTable():
 
         comparison_data = [[int(index_column[i]),[]] for i in range(len(data_rows))]
         return comparison_data
+    
+    def get_all_indices(self, data_rows):
+        all_indices = []
+        idx_col = self.column_num("index")
+        for row in data_rows:
+            all_indices.append(row[idx_col])
+
+        return all_indices
+
     
     #returns the index of the given column title
     def column_num(self, col_name):
@@ -251,10 +298,58 @@ class ComparisonTable():
             
             
         return string_self
+    
+    def comparison_pair(self):
+        # not worth overthinking. just choose 2 indices that aren't the same. a small chance this will require re-samples but who cares, runs in O(1) worst case either way
+        index1 = choice(self.index_list)
+        index2 = index1
+        while index2 == index1:
+            index2 = choice(self.index_list)
+
+        return (index1, index2)
+    
+    def title(self, index, primary_table):
+        title_col = title_column_index(primary_table)
+        index_row = target_row(primary_table, index)
+
+        
+        return primary_table[index_row][title_col]
+        
+
+    
+    def run_interactive_comparison(self, primary_table):
+        idx_pair = self.comparison_pair()
+        comp1 = idx_pair[0]
+        comp2 = idx_pair[1]
+        title1 = self.title(comp1, primary_table)
+        title2 = self.title(comp2, primary_table)
+        print(title1)
+        print(title2)
+        get_input = None
+        while (get_input != "1" and get_input != "2"):
+            get_input = input("Which song is better?\n>")
+
+            if (get_input != "1" and get_input != "2"):
+                print("error: Type a 1 or a 2\n")
+
+
+        if get_input == "1":
+            self.insert_comparison(comp1, comp2)
+        elif get_input == "2":
+            self.insert_comparison(comp2, comp1)
+
+        return
+
+
+
+            
+
+
+
 
     
 def main():
-    filename = project_name("Indexed Project List.txt")
+    filename = project_name("The Short List.txt")
     
     indexed_table = read_file_lines(filename)
 
@@ -263,9 +358,10 @@ def main():
     comparison_object = ComparisonTable(indexed_table)
 
     print(comparison_object)
-
-    comparison_object.insert_comparison(5, 0)
     
+    for i in range(3):
+        comparison_object.run_interactive_comparison(indexed_table)
+
     print(comparison_object)
 
     # comparison_idxs = create_comparison_pairs(indexed_table)
