@@ -182,11 +182,10 @@ def target_row(table, target_idx):
         print("There is not a {} index".format(target_idx))
         return
     return row_idx
-    
-    
+        
 
 class ComparisonTable():
-    def __init__(self, indexed_table):
+    def __init__(self, indexed_table, matchup_history):
         self.title_row = ["index","comparisons"]
         self.data_rows = self.initialize_comparison(indexed_table)
         self.index_list = self.get_all_indices(self.data_rows)
@@ -202,6 +201,8 @@ class ComparisonTable():
         # case 1: index is also in project list -> case 1a. the "primary key" index refers to the same project. no merge issue
         # case 1: index is also in project list -> case 1b. the primary key index refers to a different project. !!merge issue!! 
         # case 2: index is not in project list -> !!merge issue!!
+
+        self.include_matchup_history(matchup_history)
                         
     def initialize_comparison(self, table):
         # take the column that has all the indicies from indexed table, and initialize new comparisons
@@ -214,6 +215,10 @@ class ComparisonTable():
 
         comparison_data = [[int(index_column[i]),[]] for i in range(len(data_rows))]
         return comparison_data
+    
+    def include_matchup_history(self, matchup_pairs):
+        for pair in matchup_pairs:
+            self.insert_comparison(pair[0], pair[1])
     
     def get_all_indices(self, data_rows):
         all_indices = []
@@ -345,17 +350,49 @@ class ComparisonTable():
             
 
 
+class MatchupHistory():
+    def __init__(self, history_file):
+        self.title_row, self.history_record = self.loadhistory(history_file)
+        print(history_file)
+        print(self.title_row)
+        print(self.history_record)
+        self.matchups = self.matchup_pairs()
+        # print(self.matchups)
+
+    def loadhistory(self, history_file):
+        with open(history_file, "r") as f:
+            lines = f.readlines()
+            lines_rmv_n = []
+            for stringline in lines:
+                if stringline[-1] == "\n":
+                    stringline = stringline[:-1]
+                lines_rmv_n.append(stringline) 
+
+        
+        if len(lines_rmv_n) == 1:
+            print("new matchup history initialized")
+            return lines_rmv_n[0], []
+        else:
+            matchup_entries = [x.split(",") for x in lines_rmv_n[1:]]
+            return lines_rmv_n[0], matchup_entries
+
+    def matchup_pairs(self):
+        return [[record[1], record[2]] for record in self.history_record]
+
+
+
 
 
     
 def main():
     filename = project_name("The Short List.txt")
-    
+    history_file = project_name("Matchup History.txt")
+    matchup_history = MatchupHistory(history_file)
     indexed_table = read_file_lines(filename)
 
     print_with_titles(indexed_table)
 
-    comparison_object = ComparisonTable(indexed_table)
+    comparison_object = ComparisonTable(indexed_table, matchup_history.matchups)
 
     print(comparison_object)
     
